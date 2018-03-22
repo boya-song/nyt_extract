@@ -1,10 +1,14 @@
+# 654789 pairs
 import xml.etree.ElementTree as etree
 import os
 import sys
+import re
 
+NUMBER = re.compile(r"\b[-+]?\d*\.\d+|\d+\b")
 
 def concat(item):
     p = item.findall('./p')
+    # ~85 articles is like this: <p></p>
     sentence = []
     for i in p:
         sentence.append(i.text)
@@ -28,21 +32,28 @@ def parse(dname):
             root = tree.getroot()
             abstract_item = root.findall('./body/body.head/abstract')
             full_text = root.findall('./body/body.content/block[@class="full_text"]')
-            if len(abstract_item) > 0:
+            hd_online = root.findall('./body[1]/body.head/hedline/hl2')
+            hd = root.findall('./body[1]/body.head/hedline/hl1')
+            if len(abstract_item) and len(full_text)> 0:
                 abstract = concat(abstract_item[0])
                 text = concat(full_text[0])
+                if len(hd_online) > 0:
+                    text = hd_online[0].text + '. ' + text
+                elif len(hd) > 0:
+                    text = hd[0].text + '. ' + text
+                else:
+                    print("ERROR: It doesn't have a headline.")
                 fname = f.split('/')[-1].split('.')[0] + '.txt'
+                preprocess(abstract)
+                preprocess(article)
                 with open(os.path.join(parsed_dir, fname), 'w') as file:
-                    file.write('Abstract: ' + abstract + '\n\n\n' + text)
+                    file.write(abstract + '\n\n\n' + text)
         except:
-            print("ERROR: %s" % e)
             e = sys.exc_info()[0]
-            error.append(f)
-            error.append(e)
+            print("ERROR: %s" % e)
 
 
 nyt_dir = '/Users/Boya/Desktop/Courses/MATERIAL/nyt_corpus/data'
-error = []
 parsed_dir = '/Users/Boya/Desktop/Courses/MATERIAL/nyt_parsed'
 
 if os.path.exists(parsed_dir):
@@ -50,5 +61,3 @@ if os.path.exists(parsed_dir):
 
 os.mkdir(parsed_dir)
 parse(nyt_dir)
-with open(os.path.join(parsed_dir, 'error.txt'), 'w') as f:
-    f.write('\n'.join(error))
