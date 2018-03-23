@@ -24,7 +24,6 @@ def parse(dname):
     for d in dirs:
         parse(d)
     for f in files:
-        print('Parse file: ', f)
         if (f.endswith("tgz")):
             continue
         try:
@@ -48,13 +47,12 @@ def parse(dname):
                             else:
                                 print("ERROR: It doesn't have a headline.")
                             fname = f.split('/')[-1].split('.')[0] + '.txt'
-                            preprocess(abstract)
-                            preprocess(article)
+                            # preprocess(abstract)
+                            # preprocess(article)
                             opinions.append(f)
                             with open(os.path.join(parsed_dir, fname), 'w') as file:
                                 file.write(abstract + '\n\n\n' + text)
-                    else:
-                        break
+                    break
         except:
             e = sys.exc_info()[0]
             print("ERROR: %s" % e)
